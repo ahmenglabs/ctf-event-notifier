@@ -1,24 +1,30 @@
 import "dotenv/config.js"
 import pkg from "whatsapp-web.js"
-const { Client, LocalAuth } = pkg
+const { Client, LocalAuth, MessageMedia } = pkg
 import qrcode from "qrcode-terminal"
+import dayjs from "dayjs"
+import utc from "dayjs/plugin/utc.js"
+import timezone from "dayjs/plugin/timezone.js"
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+dayjs.tz.setDefault("Asia/Jakarta")
 
 import terminal from "./utils/terminal.js"
-
-if (process.env.FFMPEG_PATH === undefined) {
-  throw new Error("FFMPEG_PATH is not defined")
-}
+import { fetchCTFTimeThatNotHasNotifiedInWeek } from "./services/ctftime.js"
+import { storeEventThatHasNotified } from "./services/mongodb.js"
 
 const client = new Client({
   puppeteer: {
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    executablePath: "/usr/bin/chromium",
+    args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-accelerated-2d-canvas", "--no-first-run", "--no-zygote", "--disable-gpu"],
   },
   authStrategy: new LocalAuth(),
-  ffmpegPath: process.env.FFMPEG_PATH,
 })
 
 client.on("qr", (qr) => {
   terminal.info("QR Code received, scan it with your WhatsApp app to log in.")
+  terminal.info(qr)
   qrcode.generate(qr, { small: true })
 })
 
@@ -31,13 +37,17 @@ client.on("loading_screen", (percent) => {
 
 client.on("ready", () => {
   terminal.info("WhatsApp Bot is running! CTRL + C to stop.")
+  notifyEvents()
+  setInterval(notifyEvents, 1000 * 60 * 60)
 })
 
 client.on("message", async (message) => {
   if (loadingPercent < 99) return
   if (message.fromMe) return
 
-  // TODO: Do the stuff here
+  terminal.info(`Received message from ${message.from}: ${message.body}`)
+
+  // TODO: DO THE STUFF HERE
 })
 
 client.initialize()
@@ -47,3 +57,73 @@ process.on("SIGINT", () => {
   client.destroy()
   process.exit(0)
 })
+
+async function notifyEvents() {
+  try {
+    const events = await fetchCTFTimeThatNotHasNotifiedInWeek()
+    if (events.length === 0) return
+
+    if (process.env.MAIN_CHAT_ID === undefined) {
+      throw new Error("MAIN_CHAT_ID is not defined")
+    }
+
+    const chat = await client.getChatById(process.env.MAIN_CHAT_ID)
+
+    for (const event of events) {
+      const media = await MessageMedia.fromUrl(event.logo, { unsafeMime: true }).catch(() => null)
+
+      if (media) {
+        await chat.sendStateTyping()
+        await client.sendMessage(process.env.MAIN_CHAT_ID, media, {
+          caption: `*NEW CTF EVENT INFORMATION*
+
+*Title:* ${event.title}
+*Format:* ${event.format}
+*Restrictions:* ${event.restrictions}
+*On site:* ${event.onsite ? "Yes" : "No"}
+
+*Duration:* ${event.duration.days} days ${event.duration.hours} hours
+*Start:* ${dayjs(event.start).format("DD MMMM YYYY HH.mm")} (UTC+7)
+*Finish:* ${dayjs(event.finish).format("DD MMMM YYYY HH.mm")} (UTC+7)
+
+*Location:* ${event.location}
+*CTFTime URL:* ${event.ctftime_url}
+*Register on* ${event.url}
+
+*Description:*
+${event.description}
+`,
+        })
+      } else {
+        await chat.sendStateTyping()
+        await client.sendMessage(
+          process.env.MAIN_CHAT_ID,
+          `*NEW CTF EVENT INFORMATION*
+
+*Title:* ${event.title}
+*Format:* ${event.format}
+*Restrictions:* ${event.restrictions}
+*On site:* ${event.onsite ? "Yes" : "No"}
+
+*Duration:* ${event.duration.days} days ${event.duration.hours} hours
+*Start:* ${dayjs(event.start).format("DD MMMM YYYY HH.mm")} (UTC+7)
+*Finish:* ${dayjs(event.finish).format("DD MMMM YYYY HH.mm")} (UTC+7)
+
+*Location:* ${event.location}
+*CTFTime URL:* ${event.ctftime_url}
+*Register on* ${event.url}
+
+*Description:*
+${event.description}
+`
+        )
+      }
+
+      await storeEventThatHasNotified(event)
+      terminal.info(`Notified event "${event.title}"`)
+      await new Promise((resolve) => setTimeout(resolve, 10 * 1000))
+    }
+  } catch (error) {
+    terminal.error(`Failed to notify events: ${(error as Error).message}`)
+  }
+}

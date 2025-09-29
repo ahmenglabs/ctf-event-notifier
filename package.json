@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "node dist/app.js",
-    "dev": "tsc --watch src/app.ts",
+    "dev": "tsx --watch src/app.ts",
     "build": "tsc",
     "format": "prettier --write ."
   },
@@ -23,6 +23,7 @@
   "dependencies": {
     "dayjs": "^1.11.18",
     "dotenv": "^17.2.2",
+    "mongodb": "^6.20.0",
     "node-fetch": "^3.3.2",
     "qrcode-terminal": "^0.12.0",
     "whatsapp-web.js": "^1.34.1"
