@@ -7,13 +7,13 @@ dayjs.extend(timezone)
 
 const terminal = {
   info: (message: string) => {
-    console.info(`[${dayjs.tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss")}] [INFO] ${message}`)
+    console.info(`[${dayjs().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss")}] [INFO] ${message}`)
   },
   warn: (message: string) => {
-    console.warn(`[${dayjs.tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss")}] [WARN] ${message}`)
+    console.warn(`[${dayjs().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss")}] [WARN] ${message}`)
   },
   error: (message: string) => {
-    console.error(`[${dayjs.tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss")}] [ERROR] ${message}`)
+    console.error(`[${dayjs().tz("Asia/Jakarta").format("YYYY-MM-DD HH:mm:ss")}] [ERROR] ${message}`)
   },
 }
 
