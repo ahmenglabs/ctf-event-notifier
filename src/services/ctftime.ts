@@ -47,12 +47,12 @@ export async function fetchCTFTimeThatNotHasNotifiedInWeek() {
   const response = await fetch(`https://ctftime.org/api/v1/events/?limit=100`)
   const result = (await response.json()) as CTFTimeEvent[]
 
-  const currentTime = dayjs.tz(new Date(), "Asia/Jakarta")
+  const currentTime = dayjs().tz("Asia/Jakarta")
   const nextWeekTime = currentTime.add(7, "day")
 
   const events = []
   for (const event of result) {
-    const eventStartTime = dayjs.tz(event.start, "Asia/Jakarta")
+    const eventStartTime = dayjs(event.start).tz("Asia/Jakarta")
     const isAfterCurrent = eventStartTime.isAfter(currentTime)
     const isBeforeNextWeek = eventStartTime.isBefore(nextWeekTime)
     const hasNotBeenStored = !(await isEventHasStored(event.id))
