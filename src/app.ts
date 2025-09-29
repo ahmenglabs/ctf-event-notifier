@@ -8,7 +8,6 @@ import timezone from "dayjs/plugin/timezone.js"
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
-dayjs.tz.setDefault("Asia/Jakarta")
 
 import terminal from "./utils/terminal.js"
 import { fetchCTFTimeThatNotHasNotifiedInWeek } from "./services/ctftime.js"
@@ -83,8 +82,8 @@ async function notifyEvents() {
 *On site:* ${event.onsite ? "Yes" : "No"}
 
 *Duration:* ${event.duration.days} days ${event.duration.hours} hours
-*Start:* ${dayjs(event.start).format("DD MMMM YYYY HH.mm")} (UTC+7)
-*Finish:* ${dayjs(event.finish).format("DD MMMM YYYY HH.mm")} (UTC+7)
+*Start:* ${dayjs(event.start).tz("Asia/Jakarta").format("DD MMMM YYYY HH.mm")} WIB.
+*Finish:* ${dayjs(event.finish).tz("Asia/Jakarta").format("DD MMMM YYYY HH.mm")} WIB.
 
 *Location:* ${event.location}
 *CTFTime URL:* ${event.ctftime_url}
@@ -106,8 +105,8 @@ ${event.description}
 *On site:* ${event.onsite ? "Yes" : "No"}
 
 *Duration:* ${event.duration.days} days ${event.duration.hours} hours
-*Start:* ${dayjs(event.start).format("DD MMMM YYYY HH.mm")} (UTC+7)
-*Finish:* ${dayjs(event.finish).format("DD MMMM YYYY HH.mm")} (UTC+7)
+*Start:* ${dayjs(event.start).tz("Asia/Jakarta").format("DD MMMM YYYY HH.mm")} WIB.
+*Finish:* ${dayjs(event.finish).tz("Asia/Jakarta").format("DD MMMM YYYY HH.mm")} WIB.
 
 *Location:* ${event.location}
 *CTFTime URL:* ${event.ctftime_url}

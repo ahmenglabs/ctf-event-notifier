@@ -5,7 +5,6 @@ import timezone from "dayjs/plugin/timezone.js"
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
-dayjs.tz.setDefault("Asia/Jakarta")
 
 import { isEventHasStored } from "./mongodb.js"
 
@@ -48,12 +47,12 @@ export async function fetchCTFTimeThatNotHasNotifiedInWeek() {
   const response = await fetch(`https://ctftime.org/api/v1/events/?limit=100`)
   const result = (await response.json()) as CTFTimeEvent[]
 
-  const currentTime = dayjs()
+  const currentTime = dayjs.tz(new Date(), "Asia/Jakarta")
   const nextWeekTime = currentTime.add(7, "day")
 
   const events = []
   for (const event of result) {
-    const eventStartTime = dayjs(event.start)
+    const eventStartTime = dayjs.tz(event.start, "Asia/Jakarta")
     const isAfterCurrent = eventStartTime.isAfter(currentTime)
     const isBeforeNextWeek = eventStartTime.isBefore(nextWeekTime)
     const hasNotBeenStored = !(await isEventHasStored(event.id))
