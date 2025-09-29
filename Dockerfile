@@ -1,50 +1,17 @@
-FROM archlinux:latest
+FROM node:22-alpine
 
-RUN pacman -Syu --noconfirm && \
-    pacman -S --noconfirm \
-    base-devel \
-    curl \
-    wget \
-    git \
-    ffmpeg \
-    python \
-    ca-certificates \
+RUN apk add --no-cache \
     chromium \
     nss \
-    nspr \
-    atk \
-    at-spi2-core \
-    cups \
-    libdrm \
-    gtk3 \
-    pango \
-    cairo \
-    libx11 \
-    libxcomposite \
-    libxdamage \
-    libxext \
-    libxfixes \
-    libxi \
-    libxrandr \
-    libxrender \
-    libxss \
-    libxtst \
-    alsa-lib \
-    xdg-utils \
-    mesa \
-    dbus \
-    expat \
-    fontconfig \
-    freetype2 \
-    gcc-libs \
-    glib2 \
-    glibc \
-    libxcb \
-    libxcursor
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    ffmpeg
 
-RUN pacman -S --noconfirm nodejs npm
-
-RUN pacman -Scc --noconfirm
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 RUN mkdir -p /app/.wwebjs_auth /app/.wwebjs_cache
 
@@ -52,7 +19,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm ci --only=production
 
 COPY . .
 
