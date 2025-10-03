@@ -47,9 +47,9 @@ client.on("message", async (message) => {
 
   terminal.info(`Received message from ${message.from}: ${message.body}`)
 
-  if (message.body.includes("@everyone")) {
+  if (message.body.includes("@everyone") || message.body.includes("@here")) {
     const chat = await message.getChat() as GroupChat
-    
+
     if (chat.isGroup) {
       let text = "Hey @everyone!\n\n"
       const mentions = []
@@ -59,7 +59,7 @@ client.on("message", async (message) => {
         text += `@${participant.id.user} `
       }
 
-      await client.sendMessage(message.from, text, {
+      await client.sendMessage(message.from, text.slice(0, -1), {
         mentions
       })
     }
