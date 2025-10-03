@@ -1,6 +1,7 @@
 import "dotenv/config.js"
 import pkg from "whatsapp-web.js"
 const { Client, LocalAuth, MessageMedia } = pkg
+import type { GroupChat } from "whatsapp-web.js"
 import qrcode from "qrcode-terminal"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc.js"
@@ -46,7 +47,23 @@ client.on("message", async (message) => {
 
   terminal.info(`Received message from ${message.from}: ${message.body}`)
 
-  // TODO: DO THE STUFF HERE
+  if (message.body.includes("@everyone")) {
+    const chat = await message.getChat() as GroupChat
+    
+    if (chat.isGroup) {
+      let text = "Hey @everyone!\n\n"
+      const mentions = []
+
+      for (const participant of chat.participants) {
+        mentions.push(participant.id._serialized)
+        text += `@${participant.id.user} `
+      }
+
+      await client.sendMessage(message.from, text, {
+        mentions
+      })
+    }
+  }
 })
 
 client.initialize()
