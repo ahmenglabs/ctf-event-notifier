@@ -51,12 +51,14 @@ client.on("message", async (message) => {
     const chat = await message.getChat() as GroupChat
 
     if (chat.isGroup) {
-      let text = "Hey @everyone!\n\n"
+      let text = "Attention All Participants!\n\n"
       const mentions = []
 
       for (const participant of chat.participants) {
-        mentions.push(participant.id._serialized)
-        text += `@${participant.id.user} `
+        if (participant.id._serialized !== message.from || participant.id._serialized === client.info.wid._serialized) {
+          mentions.push(participant.id._serialized)
+          text += `@${participant.id.user} `
+        }
       }
 
       await client.sendMessage(message.from, text.slice(0, -1), {
