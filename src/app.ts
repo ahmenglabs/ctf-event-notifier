@@ -55,7 +55,7 @@ client.on("message", async (message) => {
       const mentions = []
 
       for (const participant of chat.participants) {
-        if (participant.id._serialized !== message.from || participant.id._serialized === client.info.wid._serialized) {
+        if (participant.id._serialized !== message.from && participant.id._serialized === client.info.wid._serialized) {
           mentions.push(participant.id._serialized)
           text += `@${participant.id.user} `
         }
