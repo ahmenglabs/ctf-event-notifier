@@ -48,7 +48,7 @@ client.on("message", async (message) => {
 
   terminal.info(`Received message from ${message.from}: ${message.body}`)
 
-  if (message.type === MessageTypes.STICKER) {
+  if (message.type === MessageTypes.STICKER || message.type === MessageTypes.IMAGE) {
     return await secretServices(message)
   }
 
