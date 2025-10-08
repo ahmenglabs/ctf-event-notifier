@@ -9,11 +9,6 @@ import * as canvas from "canvas"
 import terminal from "../utils/terminal.js"
 import sharp from "sharp"
 
-if (process.env.IS_PRODUCTION === "true") {
-  terminal.info("Using @tensorflow/tfjs-node for production")
-  await import("@tensorflow/tfjs-node")
-}
-
 const { Canvas, Image, ImageData } = canvas
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData })
 

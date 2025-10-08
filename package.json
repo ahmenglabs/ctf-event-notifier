@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node dist/app.js",
     "dev": "tsx --watch src/app.ts",
-    "build": "tsc",
+    "build": "tsc && cp -r src/services/images dist/services/ && cp -r src/services/models dist/services/",
     "format": "prettier --write ."
   },
   "devDependencies": {
@@ -21,7 +21,6 @@
     "typescript-eslint": "^8.44.1"
   },
   "dependencies": {
-    "@tensorflow/tfjs-node": "^4.22.0",
     "canvas": "^3.2.0",
     "dayjs": "^1.11.18",
     "dotenv": "^17.2.2",
