@@ -8,7 +8,16 @@ RUN apk add --no-cache \
     harfbuzz \
     ca-certificates \
     ttf-freefont \
-    ffmpeg
+    ffmpeg \
+    python3 \
+    make \
+    g++ \
+    pkgconfig \
+    cairo-dev \
+    pango-dev \
+    jpeg-dev \
+    giflib-dev \
+    pixman-dev
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
