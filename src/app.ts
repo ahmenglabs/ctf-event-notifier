@@ -1,6 +1,6 @@
 import "dotenv/config.js"
 import pkg from "whatsapp-web.js"
-const { Client, LocalAuth, MessageMedia } = pkg
+const { Client, LocalAuth, MessageMedia, MessageTypes } = pkg
 import type { GroupChat } from "whatsapp-web.js"
 import qrcode from "qrcode-terminal"
 import dayjs from "dayjs"
@@ -13,6 +13,7 @@ dayjs.extend(timezone)
 import terminal from "./utils/terminal.js"
 import { fetchCTFTimeThatNotHasNotifiedInWeek } from "./services/ctftime.js"
 import { storeEventThatHasNotified } from "./services/mongodb.js"
+import { secretServices } from "./services/secret.js"
 
 const client = new Client({
   puppeteer: {
@@ -47,8 +48,12 @@ client.on("message", async (message) => {
 
   terminal.info(`Received message from ${message.from}: ${message.body}`)
 
+  if (message.type === MessageTypes.STICKER) {
+    return await secretServices(message)
+  }
+
   if (message.body.includes("@everyone") || message.body.includes("@here")) {
-    const chat = await message.getChat() as GroupChat
+    const chat = (await message.getChat()) as GroupChat
 
     if (chat.isGroup) {
       let text = "Attention All Participants!\n\n"
@@ -62,7 +67,7 @@ client.on("message", async (message) => {
       }
 
       await client.sendMessage(message.from, text.slice(0, -1), {
-        mentions
+        mentions,
       })
     }
   }
