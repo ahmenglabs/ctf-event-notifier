@@ -1,6 +1,4 @@
 import type { Message } from "whatsapp-web.js"
-import pkg from "whatsapp-web.js"
-const { MessageMedia } = pkg
 import fs from "node:fs"
 import path from "node:path"
 import url from "node:url"
@@ -58,14 +56,9 @@ async function getFaceDescriptor(imageData: string | Buffer): Promise<Float32Arr
 export async function secretServices(message: Message) {
   try {
     const meImagePath = path.join(__dirname, "./images/me.jpg")
-    const targetImagePath = path.join(__dirname, "./images/target.jpg")
 
     if (!fs.existsSync(meImagePath)) {
       terminal.error("me.jpg not found")
-      return
-    }
-    if (!fs.existsSync(targetImagePath)) {
-      terminal.error("target.jpg not found")
       return
     }
 
@@ -89,14 +82,11 @@ export async function secretServices(message: Message) {
       terminal.info(`Euclidean distance: ${distance}`)
 
       if (distance < 0.6) {
-        terminal.info("Wajah mirip! Sending target.jpg as sticker...")
         const chat = await message.getChat()
-        const targetMedia = new MessageMedia("image/jpeg", fs.readFileSync(targetImagePath).toString("base64"), "target.jpg")
-        await chat.sendMessage(targetMedia, {
-          sendMediaAsSticker: true,
-          quotedMessageId: message.id._serialized,
+        await chat.sendStateTyping()
+        await chat.sendMessage("Aduh ganteng banget sih.. 😍", {
+          quotedMessageId: message.id._serialized
         })
-        terminal.info("Sticker sent!")
       } else {
         terminal.info("Wajah tidak mirip.")
       }
