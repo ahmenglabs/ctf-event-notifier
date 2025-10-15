@@ -30,6 +30,7 @@ client.on("qr", (qr) => {
 })
 
 let loadingPercent: number = 0
+const chatIdTimeouts = new Set<string>()
 
 client.on("loading_screen", (percent) => {
   loadingPercent = Number(percent)
@@ -53,6 +54,10 @@ client.on("message", async (message) => {
   }
 
   if (message.body.includes("@everyone") || message.body.includes("@here")) {
+    if (chatIdTimeouts.has(message.from)) {
+      return
+    }
+
     const chat = (await message.getChat()) as GroupChat
 
     if (chat.isGroup) {
@@ -69,6 +74,11 @@ client.on("message", async (message) => {
       await client.sendMessage(message.from, text.slice(0, -1), {
         mentions,
       })
+
+      chatIdTimeouts.add(message.from)
+      setTimeout(() => {
+        chatIdTimeouts.delete(message.from)
+      }, 10 * 60 * 1000)
     }
   }
 })
@@ -96,12 +106,14 @@ async function notifyEvents() {
       const chat = await client.getChatById(chatId)
 
       for (const event of events) {
-        const media = await MessageMedia.fromUrl(event.logo, { unsafeMime: true }).catch(() => null)
+        storeEventThatHasNotified(event)
+          .then(async () => {
+            const media = await MessageMedia.fromUrl(event.logo, { unsafeMime: true }).catch(() => null)
 
-        if (media) {
-          await chat.sendStateTyping()
-          await client.sendMessage(chatId, media, {
-            caption: `*NEW CTF EVENT INFORMATION*
+            if (media) {
+              await chat.sendStateTyping()
+              await client.sendMessage(chatId, media, {
+                caption: `*NEW CTF EVENT INFORMATION*
 
 *Title:* ${event.title}
 *Format:* ${event.format}
@@ -119,12 +131,12 @@ async function notifyEvents() {
 *Description:*
 ${event.description}
 `,
-          })
-        } else {
-          await chat.sendStateTyping()
-          await client.sendMessage(
-            chatId,
-            `*NEW CTF EVENT INFORMATION*
+              })
+            } else {
+              await chat.sendStateTyping()
+              await client.sendMessage(
+                chatId,
+                `*NEW CTF EVENT INFORMATION*
 
 *Title:* ${event.title}
 *Format:* ${event.format}
@@ -142,12 +154,15 @@ ${event.description}
 *Description:*
 ${event.description}
 `
-          )
-        }
+              )
+            }
 
-        await storeEventThatHasNotified(event)
-        terminal.info(`Notified event "${event.title}"`)
-        await new Promise((resolve) => setTimeout(resolve, 10 * 1000))
+            terminal.info(`Notified event "${event.title}"`)
+            await new Promise((resolve) => setTimeout(resolve, 10 * 1000))
+          })
+          .catch((error) => {
+            terminal.error(`Failed to store event that has notified: ${(error as Error).message}`)
+          })
       }
     }
   } catch (error) {
