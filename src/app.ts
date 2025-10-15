@@ -86,19 +86,22 @@ async function notifyEvents() {
     const events = await fetchCTFTimeThatNotHasNotifiedInWeek()
     if (events.length === 0) return
 
-    if (process.env.MAIN_CHAT_ID === undefined) {
-      throw new Error("MAIN_CHAT_ID is not defined")
+    if (process.env.CTF_EVENT_INFO_CHAT_ID === undefined) {
+      throw new Error("CTF_EVENT_INFO_CHAT_ID is not defined")
     }
 
-    const chat = await client.getChatById(process.env.MAIN_CHAT_ID)
+    const listChatId = process.env.CTF_EVENT_INFO_CHAT_ID.split(",").map((id) => id.trim())
 
-    for (const event of events) {
-      const media = await MessageMedia.fromUrl(event.logo, { unsafeMime: true }).catch(() => null)
+    for (const chatId of listChatId) {
+      const chat = await client.getChatById(chatId)
 
-      if (media) {
-        await chat.sendStateTyping()
-        await client.sendMessage(process.env.MAIN_CHAT_ID, media, {
-          caption: `*NEW CTF EVENT INFORMATION*
+      for (const event of events) {
+        const media = await MessageMedia.fromUrl(event.logo, { unsafeMime: true }).catch(() => null)
+
+        if (media) {
+          await chat.sendStateTyping()
+          await client.sendMessage(chatId, media, {
+            caption: `*NEW CTF EVENT INFORMATION*
 
 *Title:* ${event.title}
 *Format:* ${event.format}
@@ -116,12 +119,12 @@ async function notifyEvents() {
 *Description:*
 ${event.description}
 `,
-        })
-      } else {
-        await chat.sendStateTyping()
-        await client.sendMessage(
-          process.env.MAIN_CHAT_ID,
-          `*NEW CTF EVENT INFORMATION*
+          })
+        } else {
+          await chat.sendStateTyping()
+          await client.sendMessage(
+            chatId,
+            `*NEW CTF EVENT INFORMATION*
 
 *Title:* ${event.title}
 *Format:* ${event.format}
@@ -139,12 +142,13 @@ ${event.description}
 *Description:*
 ${event.description}
 `
-        )
-      }
+          )
+        }
 
-      await storeEventThatHasNotified(event)
-      terminal.info(`Notified event "${event.title}"`)
-      await new Promise((resolve) => setTimeout(resolve, 10 * 1000))
+        await storeEventThatHasNotified(event)
+        terminal.info(`Notified event "${event.title}"`)
+        await new Promise((resolve) => setTimeout(resolve, 10 * 1000))
+      }
     }
   } catch (error) {
     terminal.error(`Failed to notify events: ${(error as Error).message}`)

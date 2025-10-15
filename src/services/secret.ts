@@ -85,7 +85,7 @@ export async function secretServices(message: Message) {
         const chat = await message.getChat()
         await chat.sendStateTyping()
         await chat.sendMessage("Aduh ganteng banget sih.. 😍", {
-          quotedMessageId: message.id._serialized
+          quotedMessageId: message.id._serialized,
         })
       } else {
         terminal.info("Wajah tidak mirip.")
