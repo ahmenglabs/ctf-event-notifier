@@ -36,6 +36,8 @@ export async function isEventHasStored(eventId: number) {
 }
 
 export async function storeEventThatHasNotified(event: CTFTimeEvent) {
-  const eventsCollection = await getEventsCollection()
-  await eventsCollection.insertOne(event)
+  if (!(await isEventHasStored(event.id))) {
+    const eventsCollection = await getEventsCollection()
+    await eventsCollection.insertOne(event)
+  }
 }

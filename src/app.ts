@@ -76,9 +76,12 @@ client.on("message", async (message) => {
       })
 
       chatIdTimeouts.add(message.from)
-      setTimeout(() => {
-        chatIdTimeouts.delete(message.from)
-      }, 10 * 60 * 1000)
+      setTimeout(
+        () => {
+          chatIdTimeouts.delete(message.from)
+        },
+        10 * 60 * 1000
+      )
     }
   }
 })
