@@ -111,35 +111,10 @@ async function notifyEvents() {
       for (const event of events) {
         storeEventThatHasNotified(event)
           .then(async () => {
-            const media = await MessageMedia.fromUrl(event.logo, { unsafeMime: true }).catch(() => null)
-
-            if (media) {
-              await chat.sendStateTyping()
-              await client.sendMessage(chatId, media, {
-                caption: `*NEW CTF EVENT INFORMATION*
-
-*Title:* ${event.title}
-*Format:* ${event.format}
-*Restrictions:* ${event.restrictions}
-*On site:* ${event.onsite ? "Yes" : "No"}
-
-*Duration:* ${event.duration.days} days ${event.duration.hours} hours
-*Start:* ${dayjs(event.start).tz("Asia/Jakarta").format("DD MMMM YYYY HH.mm")} WIB.
-*Finish:* ${dayjs(event.finish).tz("Asia/Jakarta").format("DD MMMM YYYY HH.mm")} WIB.
-
-*Location:* ${event.location}
-*CTFTime URL:* ${event.ctftime_url}
-*Register on* ${event.url}
-
-*Description:*
-${event.description}
-`,
-              })
-            } else {
-              await chat.sendStateTyping()
-              await client.sendMessage(
-                chatId,
-                `*NEW CTF EVENT INFORMATION*
+            await chat.sendStateTyping()
+            await client.sendMessage(
+              chatId,
+              `*NEW CTF EVENT INFORMATION*
 
 *Title:* ${event.title}
 *Format:* ${event.format}
@@ -157,9 +132,7 @@ ${event.description}
 *Description:*
 ${event.description}
 `
-              )
-            }
-
+            )
             terminal.info(`Notified event "${event.title}"`)
             await new Promise((resolve) => setTimeout(resolve, 10 * 1000))
           })
